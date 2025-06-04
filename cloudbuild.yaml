@@ -1,4 +1,6 @@
 # cloudbuild.yaml
+options:
+  logging: CLOUD_LOGGING_ONLY
 steps:
   # Step 1: Install common tools (curl, unzip, build essentials)
   # Using a standard Ubuntu image for building C/C++ projects
