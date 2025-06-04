@@ -1,3 +1,4 @@
+timeout: 3h
 options:
   logging: CLOUD_LOGGING_ONLY
 steps:
