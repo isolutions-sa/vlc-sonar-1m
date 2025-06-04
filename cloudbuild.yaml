@@ -40,12 +40,12 @@ steps:
         mkdir build_wrapper_output
 
         echo "   Cleaning project (important for a fresh analysis)..."
-        make clean || true # Use '|| true' to not fail if clean fails (e.g., first build)
+        #make clean || true # Use '|| true' to not fail if clean fails (e.g., first build)
 
         echo "   Executing project build with build-wrapper..."
         # IMPORTANT: Replace 'make -j$(nproc)' with your actual project's build command.
         # Examples: 'cmake . && make -j$(nproc)', 'ninja', etc.
-        build-wrapper-linux-x86 --out-dir build_wrapper_output make -j$(nproc)
+        build-wrapper-linux-x86-64 --out-dir build_wrapper_output make -j$(nproc)
 
         echo "5. Running SonarScanner analysis..."
         # Add sonar-scanner to PATH for convenience within this script
