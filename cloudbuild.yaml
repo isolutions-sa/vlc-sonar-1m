@@ -1,22 +1,28 @@
-timeout: 3h
+# Top‐level timeout set to 14400 seconds (4 hours)
+timeout: "14400s"
+
 options:
   logging: CLOUD_LOGGING_ONLY
+
+  # Pick a larger machine type than the default.
+  # Available built‐in options: E2_SMALL, E2_MEDIUM (default), E2_HIGHCPU_8, E2_HIGHCPU_32
+  machineType: "E2_HIGHCPU_32"
+
 steps:
-  # sonar scanner cli
   - name: 'sonarsource/sonar-scanner-cli'
     entrypoint: 'bash'
-    #secretEnv: ['SONAR_TOKEN_TEST']
     args:
       - '-c'
       - |
-        mkdir -P /tmp/.sonar
-        mkdir -P /tmp/.scannerwork
+        mkdir -p /tmp/.sonar
+        mkdir -p /tmp/.scannerwork
         export SONAR_USER_HOME=/tmp/.sonar
         sonar-scanner \
-         -Dsonar.projectKey=vlc-sonar-1m-cloudbuild \
-         -Dsonar.projectName=vlc-sonar-1m-cloudbuild \
-         -Dsonar.sources=. \
-         -Dsonar.host.url=https://sonar-demo-pt.iexperts.cloud/ \
-         -Dsonar.login=sqp_8011d7ed31ea61bf40db20509b79b3b245b61ead \
-         -Dsonar.working.directory=/tmp/.scannerwork
+          -Dsonar.projectKey=vlc-sonar-1m-cloudbuild \
+          -Dsonar.projectName=vlc-sonar-1m-cloudbuild \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=https://sonar-demo-pt.iexperts.cloud/ \
+          -Dsonar.login=sqp_8011d7ed31ea61bf40db20509b79b3b245b61ead \
+          -Dsonar.working.directory=/tmp/.scannerwork
+
 
