@@ -18,10 +18,10 @@ steps:
         mkdir -p /tmp/.scannerwork
         export SONAR_USER_HOME=/tmp/.sonar
         sonar-scanner \
-          -Dsonar.projectKey=vlc-sonar-1m-cloudbuild \
-          -Dsonar.projectName=vlc-sonar-1m-cloudbuild \
+          -Dsonar.projectKey=poc-1million-line-of-code \
+          -Dsonar.projectName=poc-1million-line-of-code \
           -Dsonar.sources=. \
-          -Dsonar.host.url=https://sonar-demo-pt.iexperts.cloud/ \
+          -Dsonar.host.url=https://sonar.iexperts.cloud \
           -Dsonar.login=sqp_8011d7ed31ea61bf40db20509b79b3b245b61ead \
           -Dsonar.working.directory=/tmp/.scannerwork
 
