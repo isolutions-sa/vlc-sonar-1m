@@ -1,3 +1,5 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
 steps:
   # Step 1: Authenticate with Artifact Registry
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
