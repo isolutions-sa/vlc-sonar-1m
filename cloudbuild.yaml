@@ -1,15 +1,6 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 steps:
-  # Step 1: Authenticate with Artifact Registry
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        echo $PROJECT_ID
-        gcloud auth configure-docker ${_REGION}-docker.pkg.dev
-
   # sonar scanner cli
   - name: 'sonarsource/sonar-scanner-cli'
     entrypoint: 'bash'
