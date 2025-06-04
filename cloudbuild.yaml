@@ -45,7 +45,7 @@ steps:
       - '-c'
       - |
         # Add build-wrapper to PATH for convenience
-        export PATH="/usr/local/build-wrapper-linux-x86:${PATH}"
+        export PATH="/usr/local/build-wrapper-linux-x86:$$PATH"
         chmod +x /usr/local/build-wrapper-linux-x86/build-wrapper
 
         # Create a directory for build-wrapper output
