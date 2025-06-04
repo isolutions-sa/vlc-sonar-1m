@@ -1,72 +1,28 @@
-# cloudbuild.yaml
-options:
-  logging: CLOUD_LOGGING_ONLY
-
 steps:
-  # This single step will handle:
-  # 1. Installing necessary tools (curl, unzip, build-essential, git, default-jre)
-  # 2. Downloading and unzipping SonarScanner CLI
-  # 3. Downloading and unzipping SonarSource Build Wrapper
-  # 4. Configuring and building your C/C++ project using the Build Wrapper
-  # 5. Running the SonarScanner analysis
-  - name: 'ubuntu' # The base image for this single, long-running step
+  # Step 1: Authenticate with Artifact Registry
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "--- Starting comprehensive SonarQube analysis build ---"
+        echo $PROJECT_ID
+        gcloud auth configure-docker ${_REGION}-docker.pkg.dev
 
-        echo "1. Updating apt-get and installing necessary tools (curl, unzip, build-essential, git, default-jre)..."
-        apt-get update && apt-get install -y curl unzip build-essential git default-jre
-
-        echo "2. Downloading SonarScanner CLI (version 5.0.1.3006)..."
-        curl -sS 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006.zip' -o '/tmp/sonar-scanner.zip'
-        echo "   Unzipping SonarScanner CLI to /usr/local/..."
-        unzip '/tmp/sonar-scanner.zip' -d '/usr/local/'
-
-        echo "3. Downloading SonarSource Build Wrapper..."
-        # Ensure _SONAR_HOST_URL is correctly set in your Cloud Build trigger substitutions
-        curl -sS '${_SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip' -o '/tmp/build-wrapper.zip'
-        echo "   Unzipping SonarSource Build Wrapper to /usr/local/..."
-        unzip '/tmp/build-wrapper.zip' -d '/usr/local/'
-
-        echo "4. Preparing environment for C/C++ project build..."
-        # Add build-wrapper to PATH for convenience within this script
-        export PATH="/usr/local/build-wrapper-linux-x86:$$PATH"
-        chmod +x /usr/local/build-wrapper-linux-x86/build-wrapper-linux-x86-64
-        #chmod +x /usr/local/build-wrapper-linux-x86/build-wrapper # Ensure executable permissions
-
-        # Create a directory for build-wrapper output
-        mkdir build_wrapper_output
-
-        echo "   Cleaning project (important for a fresh analysis)..."
-        #make clean || true # Use '|| true' to not fail if clean fails (e.g., first build)
-
-        echo "   Executing project build with build-wrapper..."
-        # IMPORTANT: Replace 'make -j$(nproc)' with your actual project's build command.
-        # Examples: 'cmake . && make -j$(nproc)', 'ninja', etc.
-        build-wrapper-linux-x86-64 --out-dir build_wrapper_output make -j$(nproc)
-
-        echo "5. Running SonarScanner analysis..."
-        # Add sonar-scanner to PATH for convenience within this script
-        export PATH="/usr/local/sonar-scanner-5.0.1.3006/bin:$$PATH"
-
-        # Execute SonarScanner. It will automatically pick up sonar-project.properties
-        # and use the build-wrapper output directory specified there.
+  # sonar scanner cli
+  - name: 'sonarsource/sonar-scanner-cli'
+    entrypoint: 'bash'
+    secretEnv: ['SONAR_TOKEN_TEST']
+    args:
+      - '-c'
+      - |
+        mkdir -P /tmp/.sonar
+        mkdir -P /tmp/.scannerwork
+        export SONAR_USER_HOME=/tmp/.sonar
         sonar-scanner \
-          -Dsonar.host.url=${_SONAR_HOST_URL} \
-          -Dsonar.token=sqp_8011d7ed31ea61bf40db20509b79b3b245b61ead # Reminder: Hardcoding token is not secure. Use Secret Manager!
+         -Dsonar.projectKey=vlc-sonar-1m-cloudbuild \
+         -Dsonar.projectName=vlc-sonar-1m-cloudbuild \
+         -Dsonar.sources=. \
+         -Dsonar.host.url=https://sonar-demo-pt.iexperts.cloud/ \
+         -Dsonar.login=sqp_8011d7ed31ea61bf40db20509b79b3b245b61ead \
+         -Dsonar.working.directory=/tmp/.scannerwork
 
-        echo "--- Build and analysis complete! ---"
-
-substitutions:
-  _SONAR_HOST_URL: 'https://sonar-demo-pt.iexperts.cloud' # Replace with your SonarQube server URL
-
-# --- SECRETS (for secure access to SonarQube token) ---
-# Define secrets that your build steps can access.
-# Make sure you have created the secret 'sonar-token' in Secret Manager
-# and granted the Cloud Build service account access to it.
-# If you revert to Secret Manager, uncomment the block below and replace the hardcoded token above.
-# secrets:
-#   - id: sonar-token
-#     secretEnv: 'SONAR_TOKEN'
