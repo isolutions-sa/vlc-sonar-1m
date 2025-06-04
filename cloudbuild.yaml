@@ -12,3 +12,13 @@ steps:
       - |
         apt-get update && apt-get install -y curl unzip build-essential git 
         # 'build-essential' provides gcc, g++, make etc. Adjust based on your project's build dependencies (e.g., autotools, cmake)
+
+  # Step 2: Download SonarScanner CLI
+  # We will use the 'ubuntu' builder for unzip now, so this step can be combined.
+  - name: 'ubuntu' # Using ubuntu for all download and unzip operations
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        curl -sS 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006.zip' -o '/tmp/sonar-scanner.zip'
+        unzip '/tmp/sonar-scanner.zip' -d '/usr/local/'
