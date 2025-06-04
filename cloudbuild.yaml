@@ -1,0 +1,90 @@
+# cloudbuild.yaml
+steps:
+  # Step 1: Install common tools (curl, unzip, build essentials)
+  # Using a standard Ubuntu image for building C/C++ projects
+  - name: 'ubuntu'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        apt-get update && apt-get install -y curl unzip build-essential git
+        # 'build-essential' provides gcc, g++, make etc. Adjust based on your project's build dependencies (e.g., autotools, cmake)
+
+  # Step 2: Download SonarScanner CLI
+  # IMPORTANT: Replace with the exact version you need and download URL from your SonarQube server
+  # (e.g., SonarQube URL/settings/general -> SonarScanner CLI)
+  - name: 'gcr.io/cloud-builders/curl'
+    args:
+      - '-sS'
+      - 'https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006.zip' # Replace with your SonarScanner CLI URL/version
+      - '-o'
+      - '/tmp/sonar-scanner.zip'
+  - name: 'gcr.io/cloud-builders/unzip'
+    args: ['/tmp/sonar-scanner.zip', '-d', '/usr/local/']
+
+  # Step 3: Download SonarSource Build Wrapper
+  # IMPORTANT: Replace with the exact version you need and download URL from your SonarQube server
+  # (Administration > General Settings > C/C++/Objective-C > Build Wrapper)
+  - name: 'gcr.io/cloud-builders/curl'
+    args:
+      - '-sS'
+      - '${_SONAR_HOST_URL}/static/cpp/build-wrapper-linux-x86.zip' # Make sure this URL is correct for your SonarQube version
+      - '-o'
+      - '/tmp/build-wrapper.zip'
+  - name: 'gcr.io/cloud-builders/unzip'
+    args: ['/tmp/build-wrapper.zip', '-d', '/usr/local/']
+
+  # Step 4: Configure and Build your C/C++ project using the Build Wrapper
+  # This step runs your project's actual build process, 'wrapped' by build-wrapper.
+  # The output of build-wrapper (build-wrapper-dump.json) is crucial.
+  - name: 'ubuntu' # Use the same or similar builder as your actual project build
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Add build-wrapper to PATH for convenience
+        export PATH="/usr/local/build-wrapper-linux-x86:${PATH}"
+        chmod +x /usr/local/build-wrapper-linux-x86/build-wrapper
+
+        # Create a directory for build-wrapper output
+        mkdir build_wrapper_output
+
+        # Clean your project (important for a fresh analysis)
+        make clean || true # Use '|| true' to not fail if clean fails (e.g., first build)
+
+        # Execute your project's build command through build-wrapper
+        # Replace 'make -j$(nproc)' with your actual build command (e.g., 'cmake . && make', 'ninja', etc.)
+        build-wrapper-linux-x86 --out-dir build_wrapper_output make -j$(nproc)
+
+  # Step 5: Run SonarScanner analysis
+  # This step runs SonarScanner CLI, which uses the build-wrapper output.
+  - name: 'ubuntu' # Requires Java Runtime Environment (JRE) for SonarScanner
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Add sonar-scanner to PATH
+        export PATH="/usr/local/sonar-scanner-5.0.1.3006/bin:${PATH}"
+
+        # Run SonarScanner. It will automatically pick up sonar-project.properties
+        # and use the build-wrapper output directory specified there.
+        sonar-scanner \
+          -Dsonar.host.url=${_SONAR_HOST_URL} \
+          -Dsonar.token=sqp_8011d7ed31ea61bf40db20509b79b3b245b61ead
+          # No need to specify sonar.cfamily.build-wrapper-output here if it's in sonar-project.properties
+
+# --- SUBSTITIONS (for sensitive info or dynamic values) ---
+# These are values that will be passed into the Cloud Build trigger.
+# Store sensitive info like SONAR_TOKEN in Google Secret Manager.
+# Cloud Build will automatically substitute these variables.
+#substitutions:
+#  _SONAR_HOST_URL: 'https://sonar-demo-pt.iexperts.cloud' # Replace with your SonarQube server URL
+#  _SONAR_TOKEN: 'projects/${PROJECT_ID}/secrets/sonar-token/versions/latest' # Example using Secret Manager
+
+# --- SECRETS (for secure access to SonarQube token) ---
+# Define secrets that your build steps can access.
+# Make sure you have created the secret 'sonar-token' in Secret Manager
+# and granted the Cloud Build service account access to it.
+#secrets:
+#  - id: sonar-token
+#    secretEnv: 'SONAR_TOKEN'
