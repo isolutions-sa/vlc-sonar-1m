@@ -21,7 +21,7 @@ steps:
           -Dsonar.projectKey=poc-1million-line-of-code \
           -Dsonar.projectName=poc-1million-line-of-code \
           -Dsonar.sources=. \
-          -Dsonar.host.url=https://sonar.iexperts.cloud \
+          -Dsonar.host.url=https://sonar-demo-pt.iexperts.cloud \
           -Dsonar.login=sqp_bcc1cc9b0e7043bce4e8f0cdf4617ec9e7015b71 \
           -Dsonar.working.directory=/tmp/.scannerwork
 
