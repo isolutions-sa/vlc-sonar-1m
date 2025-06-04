@@ -33,7 +33,8 @@ steps:
         echo "4. Preparing environment for C/C++ project build..."
         # Add build-wrapper to PATH for convenience within this script
         export PATH="/usr/local/build-wrapper-linux-x86:$$PATH"
-        chmod +x /usr/local/build-wrapper-linux-x86/build-wrapper # Ensure executable permissions
+        chmod +x /usr/local/build-wrapper-linux-x86/build-wrapper-linux-x86-64
+        #chmod +x /usr/local/build-wrapper-linux-x86/build-wrapper # Ensure executable permissions
 
         # Create a directory for build-wrapper output
         mkdir build_wrapper_output
