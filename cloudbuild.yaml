@@ -13,7 +13,7 @@ steps:
   # sonar scanner cli
   - name: 'sonarsource/sonar-scanner-cli'
     entrypoint: 'bash'
-    secretEnv: ['SONAR_TOKEN_TEST']
+    #secretEnv: ['SONAR_TOKEN_TEST']
     args:
       - '-c'
       - |
