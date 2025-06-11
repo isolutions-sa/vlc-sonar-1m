@@ -6,7 +6,7 @@ options:
 
   # Pick a larger machine type than the default.
   # Available built‐in options: E2_SMALL, E2_MEDIUM (default), E2_HIGHCPU_8, E2_HIGHCPU_32
-  machineType: "E2_HIGHCPU_8"
+  # machineType: "E2_HIGHCPU_8"
 
 steps:
   - name: 'sonarsource/sonar-scanner-cli'
